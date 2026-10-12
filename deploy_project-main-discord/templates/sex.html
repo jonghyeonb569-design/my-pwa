@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="정부24">
+    <!-- 사파리 홈 화면 아이콘 설정 -->
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='uploads/gov_logo_new.png') }}">
+    <!-- 일반 브라우저 파비콘 설정 -->
+    <link rel="icon" href="{{ url_for('static', filename='uploads/gov_logo_new.png') }}">
+    <meta name="format-detection" content="telephone=no">
+    <title>주민등록증 모바일 확인서비스</title>
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f8;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-sizing: border-box;
+            background-color: #eef2f8;
+            z-index: 50;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            color: #333;
+        }
+        .header-left .back-arrow {
+            font-size: 18px;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .header-left .gov24-text {
+            font-size: 18px;
+            font-weight: 800;
+            margin-right: 10px;
+            letter-spacing: -1px;
+        }
+        .header-center {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        .header-center .gov-logo {
+            height: 26px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .header-center .service-text {
+            font-size: 17px;
+            font-weight: bold;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .header-right span {
+            width: 22px;
+            height: 2px;
+            background-color: #333;
+        }
+
+        /* 공통 카드 스타일 */
+        .card-common {
+            width: 90%;
+            max-width: 360px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px auto 0 auto;
+        }
+
+        .card {
+            padding-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
+
+        .info-container {
+            width: 100%;
+            padding: 20px 30px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .text-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .name-style {
+            font-size: 24px;
+            font-weight: 800;
+            color: #222;
+            margin-bottom: 5px;
+            letter-spacing: -1px;
+        }
+
+        .address-summary {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .qr-code {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+        }
+
+        .timer-container {
+            width: 85%;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4a76c9;
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        .timer-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #4a76c9;
+            font-weight: bold;
+        }
+
+        .qr-instruction {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #999;
+            text-align: center;
+        }
+
+        .current-time {
+            margin-top: 5px;
+            font-size: 16px;
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        .detail-button {
+            width: 100%;
+            height: 60px;
+            background-color: #3366cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 상세 정보 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 100px);
+            background-color: #eef2f8;
+            z-index: 100;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .modal-card {
+            padding: 30px 30px 20px 30px;
+            min-height: 500px;
+        }
+
+        .modal-info-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+
+        /* 수정된 토글 스위치 스타일 */
+        .toggle-switch {
+            width: 55px;
+            height: 28px;
+            background-color: #ccc; /* 꺼짐 상태: 회색 */
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border: none;
+            padding: 0;
+        }
+
+        /* 켜짐 상태: 검정색 */
+        .toggle-switch.active {
+            background-color: #000;
+        }
+
+        .toggle-handle {
+            width: 22px;
+            height: 22px;
+            background-color: #fff;
+            border-radius: 4px;
+            position: absolute;
+            top: 3px;
+            left: 3px; /* 초기 상태 (꺼짐): 왼쪽 */
+            transition: left 0.3s ease;
+        }
+
+        /* 켜짐 상태 (오른쪽으로 이동) */
+        .toggle-switch.active .toggle-handle {
+            left: 30px;
+        }
+
+        .modal-jumin {
+            width: 100%;
+            font-size: 19px;
+            font-weight: 700;
+            color: #333;
+            margin-top: 5px;
+            text-align: left;
+            letter-spacing: -0.5px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .modal-address {
+            width: 100%;
+            font-size: 17px;
+            color: #999;
+            font-weight: 500;
+            margin-top: 15px;
+            text-align: left;
+            line-height: 1.4;
+            letter-spacing: -0.5px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .modal-issue-date {
+            margin-top: auto;
+            padding-top: 40px;
+            font-size: 19px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-issue-office {
+            margin-top: 5px;
+            font-size: 16px;
+            color: #999;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .back-circle-btn {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .back-circle-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #333;
+        }
+
+        .footer-warning {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to right, #6a5acd, #9370db);
+            color: white;
+            padding: 10px 0;
+            font-size: 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        .marquee-container {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 20s linear infinite;
+        }
+
+        .marquee-text {
+            display: inline-block;
+            padding-right: 50px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <span class="back-arrow">◀</span>
+            <span class="gov24-text">정부24</span>
+        </div>
+        <div class="header-center">
+            <img src="{{ url_for('static', filename='uploads/gov_emblem_no_bg.png') }}" class="gov-logo" alt="정부문장">
+            <span class="service-text">주민등록증 모바일 확인서비스</span>
+        </div>
+        <div class="header-right">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <div class="card-common card" id="mainCard">
+        <img src="{{ imgurl }}" class="profile-img" alt="프로필">
+        
+        <div class="info-container">
+            <div class="text-info">
+                <div class="name-style">{{ name }}</div>
+                <div class="address-summary">{{ juso.split(' ')[0] }} {{ juso.split(' ')[1] }}</div>
+            </div>
+            <img id="QR_img" class="qr-code" src="" alt="QR">
+        </div>
+
+        <div class="timer-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="timer-text">
+                <span>남은시간</span>
+                <span id="timerSeconds">30초</span>
+            </div>
+        </div>
+
+        <div class="qr-instruction">
+            QR코드를 리더기에 스캔하세요.
+        </div>
+        <div class="current-time" id="currentTime">
+            2026년07월16일 00:00:00
+        </div>
+
+        <button class="detail-button" onclick="showModal()">상세정보 표시</button>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="card-common modal-card">
+            <img src="{{ imgurl }}" class="profile-img" alt="프로필">
+            
+            <div class="modal-info-header">
+                <div class="name-style">{{ name }}</div>
+                <button class="toggle-switch" id="toggleSwitch" onclick="toggleMasking()">
+                    <div class="toggle-handle"></div>
+                </button>
+            </div>
+
+            <div class="modal-jumin" id="jumin">{{ num }}</div>
+            <div class="modal-address" id="address">{{ detail_juso }}</div>
+
+            <div class="modal-issue-date">{{ make }}</div>
+            <div class="modal-issue-office">{{ jiname }}</div>
+        </div>
+        
+        <div style="display: flex; width: 90%; justify-content: flex-start; max-width: 360px; margin: 0 auto;">
+            <div class="back-circle-btn" onclick="hideModal()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-warning">
+        <div class="marquee-container">
+            <span class="marquee-text">위·변조 또는 3년이하의 벌금 주민등록증 이미지 위·변조 및 부정 사용 금지 (위반시 처벌)</span>
+            <span class="marquee-text">위·변조 또는 3년이하의 벌금 주민등록증 이미지 위·변조 및 부정 사용 금지 (위반시 처벌)</span>
+        </div>
+    </div>
+
+    <script>
+        // 원본 데이터 저장
+        const originalJumin = "{{ num }}";
+        const originalAddress = "{{ detail_juso }}";
+        let isShow = false; // 초기 상태: 마스킹됨 (스위치 꺼짐 - 왼쪽)
+
+        function showModal() {
+            document.getElementById('detailModal').style.display = 'block';
+            document.getElementById('mainCard').style.display = 'none';
+            // 모달 열 때 초기 상태로 마스킹 설정 (꺼짐)
+            isShow = false;
+            updateUI();
+        }
+
+        function hideModal() {
+            document.getElementById('detailModal').style.display = 'none';
+            document.getElementById('mainCard').style.display = 'flex';
+        }
+
+        function maskJumin(jumin) {
+            if (!jumin || jumin.length < 14) return jumin;
+            return jumin.substring(0, 7) + '*'.repeat(7);
+        }
+
+        function maskAddress(address) {
+            if (!address) return address;
+            return '*'.repeat(address.length);
+        }
+
+        function toggleMasking() {
+            isShow = !isShow;
+            updateUI();
+        }
+
+        function updateUI() {
+            const juuminEl = document.getElementById('jumin');
+            const addressEl = document.getElementById('address');
+            const toggleSwitch = document.getElementById('toggleSwitch');
+
+            if (isShow) {
+                // 켜짐 상태 (표시 - 오른쪽)
+                juuminEl.textContent = originalJumin;
+                addressEl.textContent = originalAddress;
+                toggleSwitch.classList.add('active');
+            } else {
+                // 꺼짐 상태 (마스킹 - 왼쪽)
+                juuminEl.textContent = maskJumin(originalJumin);
+                addressEl.textContent = maskAddress(originalAddress);
+                toggleSwitch.classList.remove('active');
+            }
+        }
+
+        let timeLeft = 30;
+        const progressFill = document.getElementById('progressFill');
+        const timerSeconds = document.getElementById('timerSeconds');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const qrImg = document.getElementById('QR_img');
+
+        function updateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTimeDisplay.innerText = `${year}년${month}월${day}일 ${hours}:${minutes}:${seconds}`;
+        }
+
+        function generateRealQR() {
+            const verifyUrl = window.location.origin + "/qr_check/{{ query }}";
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
+        }
+
+        setInterval(() => {
+            updateTime();
+            timeLeft--;
+            if (timeLeft < 0) {
+                timeLeft = 30;
+                generateRealQR();
+            }
+            timerSeconds.innerText = `${timeLeft}초`;
+            progressFill.style.width = `${(timeLeft / 30) * 100}%`;
+        }, 1000);
+
+        updateTime();
+        generateRealQR();
+    </script>
+</body>
+</html>

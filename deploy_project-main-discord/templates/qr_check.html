@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>주민등록증 모바일 확인서비스</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-wrapper {
+            width: 120px;
+            height: 120px;
+            background-color: #f2f2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        /* SVG 아이콘 스타일 */
+        .id-icon-svg {
+            width: 65px;
+            height: auto;
+        }
+
+        .name {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        .birth {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .message {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+            font-weight: 500;
+            margin-bottom: 60px;
+        }
+
+        .highlight {
+            color: #3b82f6;
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .close-btn {
+            width: 160px;
+            height: 48px;
+            background-color: #d1d5db;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-wrapper">
+            <!-- 사용자가 제공한 로고를 고해상도 SVG로 재현 -->
+            <svg class="id-icon-svg" viewBox="0 0 100 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 카드 테두리 -->
+                <rect x="2" y="2" width="86" height="56" rx="6" stroke="#444" stroke-width="4"/>
+                
+                <!-- 사람 아이콘 (머리) -->
+                <circle cx="22" cy="22" r="6" stroke="#444" stroke-width="3"/>
+                <!-- 사람 아이콘 (몸통) -->
+                <path d="M10 44C10 38 14 34 22 34C30 34 34 38 34 44" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+                
+                <!-- 텍스트 라인 -->
+                <line x1="45" y1="20" x2="75" y2="20" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+                <line x1="45" y1="30" x2="75" y2="30" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+                <line x1="45" y1="40" x2="60" y2="40" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+                
+                <!-- 파란색 체크 배지 -->
+                <circle cx="78" cy="18" r="14" fill="#3b82f6" stroke="#fff" stroke-width="3"/>
+                <path d="M72 18L76 22L84 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <div class="name">{{ name }}</div>
+        <div class="birth">{{ birth }}</div>
+
+        <div class="message">
+            진위확인을 요청하신<br>
+            주민등록증 모바일 확인서비스는<br>
+            등록된 내용과 <span class="highlight">일치합니다.</span>
+        </div>
+
+        <button class="close-btn" onclick="window.close();">닫기</button>
+    </div>
+</body>
+</html>
